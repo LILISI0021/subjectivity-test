@@ -248,7 +248,7 @@ function renderButtons(){
 
 function updateProgress(){
   const percent = ((index + 1) / questions.length) * 100;
-  document.getElementById("progress").style.width = percent + "%";
+  document.getElementById("bar").style.width = percent + "%";
 }
 
 function showResult(){
@@ -306,72 +306,6 @@ function next(v){
   answers.push(v);
   index++;
   index<questions.length ? showQuestion() : finish();
-}
-
-// ================== 结果 ==================
-function finish(){
-  test.classList.add("hidden");
-  result.classList.remove("hidden");
-
-  const dims=[[],[],[],[],[]];
-  answers.forEach((v,i)=>dims[questions[i].d].push(v));
-  const scores=dims.map(d=>Math.round(d.reduce((a,b)=>a+b,0)/d.length*20));
-  const total=Math.round(scores.reduce((a,b)=>a+b,0)/5);
-
-  totalScore.innerHTML=`<strong>总体主体性指数：${total} / 100</strong>`;
-  overallText.innerHTML=overallFeedback(total);
-
-  const names=["自我觉察","关系位置","内在拉扯","情绪代价","结构意识"];
-  let html="";
-  scores.forEach((s,i)=>{
-    html+=`
-    <div class="dimension">
-      <h3>${names[i]}（${s}/100）</h3>
-      <div class="dim-bar"><div class="dim-bar-inner" style="width:${s}%"></div></div>
-      ${getDimensionFeedback(i,s)}
-    </div>`;
-  });
-  dimensionFeedback.innerHTML=html;
-}
-
-// ================== 文本 ==================
-function overallFeedback(s){
-  if(s<45) return "<p>你当前可能较多地将关系、期待或稳定性置于自身感受之前。这更像是一种长期形成的适应位置，而不是个人能力问题。</p >";
-  if(s<60) return "<p>你已经能够觉察自我，但在现实中，主体性仍需要为关系与规范让路。</p >";
-  if(s<75) return "<p>你正处在觉察与行动之间的拉扯期，主体性正在形成。</p >";
-  if(s<90) return "<p>你在多个领域中建立了较为稳定的主体位置，但这往往需要额外心理能量维持。</p >";
-  return "<p>你具备高度自我觉察与结构理解，同时清楚自主并非没有代价。</p >";
-}
-
-function getDimensionFeedback(d,s){
-const texts=[
-[
-"<p>你可能较少停下来确认自己的真实状态，更容易忽略身体与情绪的信号。这通常并非因为你不敏感，而是你可能长期被训练去优先应对外部需求。</p >",
-"<p>你已经能够在一定程度上觉察自我，但这种觉察仍可能被现实情境打断。你知道自己在勉强，却未必总能停下来。</p >",
-"<p>你对自身状态有较高敏感度，能较早觉察不适，并认真对待这些信号。</p >"
-],
-[
-"<p>你在关系中较容易让渡位置，把稳定与和谐放在首位。这可能让你长期承担更多心理压力。</p >",
-"<p>你开始意识到关系中的不平衡，但仍会反复权衡是否值得表达。</p >",
-"<p>你能在关系中保有相对清晰的自我位置，理解亲密并不等于自我消失。</p >"
-],
-[
-"<p>你常处于内在冲突之中，为自己的需要感到犹豫或内疚。</p >",
-"<p>你已经意识到拉扯的存在，但尚未在所有领域找到稳定出口。</p >",
-"<p>你能较好整合自我需要与现实条件，内在冲突相对较少。</p >"
-],
-[
-"<p>你可能已经习惯了承担过多情绪劳动，疲惫感被长期正常化。</p >",
-"<p>你开始觉察这些代价，但仍在学习如何真正休息。</p >",
-"<p>你对自身情绪消耗有清晰意识，并能适度进行调节。</p >"
-],
-[
-"<p>你可能倾向于将压力与困境归因为个人不足。</p >",
-"<p>你已经开始理解环境与结构的影响。</p >",
-"<p>你能清楚区分个人责任与结构限制，不轻易自责。</p >"
-]
-];
-return s<45?texts[d][0]:s<70?texts[d][1]:texts[d][2];
 }
 </script>
 </body>
