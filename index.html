@@ -169,7 +169,11 @@ const questions = [
 
 let index = 0;
 let answers = new Array(questions.length).fill(null);
-
+function startTest(){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("test").classList.remove("hidden");
+  render();
+}
 function render(){
   const q = questions[index];
 
@@ -283,30 +287,6 @@ function getAwarenessFeedback(score){
 }
 
 render();
-</script>
-// ================== 流程 ==================
-function startTest(){
-  start.classList.add("hidden");
-  test.classList.remove("hidden");
-  showQuestion();
-}
-function showQuestion(){
-  question.innerText = questions[index].t;
-  options.innerHTML="";
-  labels.forEach((l,i)=>{
-    const div=document.createElement("div");
-    div.className="option";
-    div.innerText=l;
-    div.onclick=()=>next(i+1);
-    options.appendChild(div);
-  });
-  bar.style.width=(index/questions.length*100)+"%";
-}
-function next(v){
-  answers.push(v);
-  index++;
-  index<questions.length ? showQuestion() : finish();
-}
 </script>
 </body>
 </html>
