@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>女性自我主体性测试</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  font-family:"Noto Serif SC",serif;
+  background:#f6f8f7;
+  color:#2f2f2f;
+  line-height:1.9;
+  margin:0;
+}
+.container{
+  max-width:760px;
+  margin:auto;
+  padding:40px 20px;
+}
+.card{
+  background:#ffffff;
+  border-radius:16px;
+  padding:36px;
+  box-shadow:0 12px 36px rgba(0,0,0,.06);
+  margin-bottom:28px;
+}
+h1,h2,h3{
+  font-weight:600;
+}
+button{
+  background:#6fa58c;
+  color:#fff;
+  border:none;
+  padding:14px 26px;
+  border-radius:10px;
+  font-size:16px;
+  cursor:pointer;
+}
+.progressbar{
+  height:8px;
+  background:#dde7e2;
+  border-radius:6px;
+  overflow:hidden;
+  margin-bottom:24px;
+}
+.progress{
+  height:100%;
+  width:0%;
+  background:#6fa58c;
+  transition:.4s;
+}
+.option{
+  padding:14px;
+  margin:12px 0;
+  border-radius:10px;
+  cursor:pointer;
+  background:#f2f6f4;
+}
+.option:hover{
+  background:#e7f0ec;
+}
+.hidden{display:none}
+
+.dimension{
+  margin-top:40px;
+}
+.dim-bar{
+  height:10px;
+  background:#e1ebe6;
+  border-radius:6px;
+  overflow:hidden;
+  margin:10px 0 18px 0;
+}
+.dim-bar-inner{
+  height:100%;
+  background:#6fa58c;
+}
+small{
+  color:#666;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<!-- 测试说明 -->
+<div id="start" class="card">
+<h1>女性自我主体性测试</h1>
+<p>
+这个测试源于一个常被忽略的经验：  
+许多女性并不是不知道自己不舒服，而是在长期的关系、角色与期待中，
+逐渐习惯将这些感受放在一边。
+<br><br>
+本测试不评估好坏，也不提供行为建议。  
+它试图呈现的是：你在觉察、关系、内在拉扯与结构条件中，
+通常站在什么位置。
+<br><br>
+<span style="color:#777;font-size:0.9rem;">
+PS：本测试不会保存或记录任何作答数据。测试完成后页面刷新将无法找回结果，如需留存，请自行截图保存。
+</span>
+</p >
+<button onclick="startTest()">开始测试</button>
+</div>
+
+<!-- 测试页 -->
+<div id="test" class="card hidden">
+<div class="progressbar"><div class="progress" id="bar"></div></div>
+<h2 id="question"></h2>
+<div id="options"></div>
+</div>
+
+<!-- 结果页 -->
+<div id="result" class="card hidden">
+<h2>你的测试结果</h2>
+<p id="totalScore"></p >
+<div id="overallText"></div>
+<div id="dimensionFeedback"></div>
+</div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    text: "当你在日常生活中感到明显疲惫或不舒服时，你更接近：",
+    dim: "awareness",
+    options: [
+      {text:"很快意识到，并承认“我现在不太好”", value:5},
+      {text:"会意识到，但通常先继续把事情做完", value:4},
+      {text:"常常是过后才发现自己已经很累了", value:2},
+      {text:"很少注意到这些感受", value:1}
+    ]
+  },
+  {
+    text: "当你意识到自己有负面或复杂感受时，你通常会：",
+    dim: "awareness",
+    options: [
+      {text:"认为这些感受本身是重要的", value:5},
+      {text:"理解它们，但不确定是否需要理会", value:3},
+      {text:"觉得想太多、没必要", value:2},
+      {text:"倾向于尽快压下去", value:1}
+    ]
+  },
+  {
+    text: "如果你的感受与你“应该做的事”不一致：",
+    dim: "awareness",
+    options: [
+      {text:"认真权衡感受是否需要被优先对待", value:5},
+      {text:"感到纠结，但多半还是照原计划", value:3},
+      {text:"说服自己感受不重要", value:2},
+      {text:"几乎不会把感受纳入考虑", value:1}
+    ]
+  },
+  {
+    text: "回顾过去一段时间，你更接近以下哪种描述：",
+    dim: "awareness",
+    options: [
+      {text:"大多知道自己处在什么状态", value:5},
+      {text:"有时清楚，有时模糊", value:3},
+      {text:"常靠情绪崩溃才意识到", value:2},
+      {text:"很少去想这些", value:1}
+    ]
+  }
+];
+
+let index = 0;
+let answers = new Array(questions.length).fill(null);
+
+function render(){
+  const q = questions[index];
+
+  document.getElementById("question").innerText = q.text;
+  const options = document.getElementById("options");
+  options.innerHTML = "";
+
+  q.options.forEach((opt, i)=>{
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerText = opt.text;
+
+    if(answers[index] === opt.value){
+      div.classList.add("selected");
+    }
+
+    div.onclick = ()=>{
+      answers[index] = opt.value;
+      render();
+    };
+
+    options.appendChild(div);
+  });
+
+  updateProgress();
+  renderButtons();
+}
+
+function renderButtons(){
+  let btnArea = document.getElementById("navButtons");
+  if(!btnArea){
+    btnArea = document.createElement("div");
+    btnArea.id = "navButtons";
+    btnArea.style.marginTop = "30px";
+    document.getElementById("test").appendChild(btnArea);
+  }
+
+  btnArea.innerHTML = "";
+
+  if(index > 0){
+    const backBtn = document.createElement("button");
+    backBtn.innerText = "返回上一题";
+    backBtn.onclick = ()=>{
+      index--;
+      render();
+    };
+    btnArea.appendChild(backBtn);
+  }
+
+  const nextBtn = document.createElement("button");
+  nextBtn.style.marginLeft = "12px";
+
+  if(index === questions.length - 1){
+    nextBtn.innerText = "完成测试";
+    nextBtn.onclick = ()=>{
+      if(answers[index] === null){
+        alert("请选择一个选项");
+        return;
+      }
+      showResult();
+    };
+  } else {
+    nextBtn.innerText = "下一题";
+    nextBtn.onclick = ()=>{
+      if(answers[index] === null){
+        alert("请选择一个选项");
+        return;
+      }
+      index++;
+      render();
+    };
+  }
+
+  btnArea.appendChild(nextBtn);
+}
+
+function updateProgress(){
+  const percent = ((index + 1) / questions.length) * 100;
+  document.getElementById("progress").style.width = percent + "%";
+}
+
+function showResult(){
+  let total = answers.reduce((a,b)=>a+b,0);
+  let percent = (total / (questions.length*5)) * 100;
+
+  document.getElementById("test").style.display="none";
+  const r = document.getElementById("result");
+  r.style.display="block";
+
+  r.innerHTML = `
+  <div class="result-box">
+    <h2>自我觉察维度得分：${Math.round(percent)}</h2>
+    <p>${getAwarenessFeedback(percent)}</p>
+  </div>`;
+}
+
+function getAwarenessFeedback(score){
+  if(score <= 20){
+    return "你目前较少将注意力放在自己的感受上。";
+  }
+  if(score <= 40){
+    return "你对感受有所意识，但常常延后处理。";
+  }
+  if(score <= 60){
+    return "你已经能觉察感受，但仍受情境影响。";
+  }
+  if(score <= 80){
+    return "你具备稳定的自我觉察能力。";
+  }
+  return "你对自身状态拥有高度清晰的觉察。";
+}
+
+render();
+</script>
+// ================== 流程 ==================
+function startTest(){
+  start.classList.add("hidden");
+  test.classList.remove("hidden");
+  showQuestion();
+}
+function showQuestion(){
+  question.innerText = questions[index].t;
+  options.innerHTML="";
+  labels.forEach((l,i)=>{
+    const div=document.createElement("div");
+    div.className="option";
+    div.innerText=l;
+    div.onclick=()=>next(i+1);
+    options.appendChild(div);
+  });
+  bar.style.width=(index/questions.length*100)+"%";
+}
+function next(v){
+  answers.push(v);
+  index++;
+  index<questions.length ? showQuestion() : finish();
+}
+
+// ================== 结果 ==================
+function finish(){
+  test.classList.add("hidden");
+  result.classList.remove("hidden");
+
+  const dims=[[],[],[],[],[]];
+  answers.forEach((v,i)=>dims[questions[i].d].push(v));
+  const scores=dims.map(d=>Math.round(d.reduce((a,b)=>a+b,0)/d.length*20));
+  const total=Math.round(scores.reduce((a,b)=>a+b,0)/5);
+
+  totalScore.innerHTML=`<strong>总体主体性指数：${total} / 100</strong>`;
+  overallText.innerHTML=overallFeedback(total);
+
+  const names=["自我觉察","关系位置","内在拉扯","情绪代价","结构意识"];
+  let html="";
+  scores.forEach((s,i)=>{
+    html+=`
+    <div class="dimension">
+      <h3>${names[i]}（${s}/100）</h3>
+      <div class="dim-bar"><div class="dim-bar-inner" style="width:${s}%"></div></div>
+      ${getDimensionFeedback(i,s)}
+    </div>`;
+  });
+  dimensionFeedback.innerHTML=html;
+}
+
+// ================== 文本 ==================
+function overallFeedback(s){
+  if(s<45) return "<p>你当前可能较多地将关系、期待或稳定性置于自身感受之前。这更像是一种长期形成的适应位置，而不是个人能力问题。</p >";
+  if(s<60) return "<p>你已经能够觉察自我，但在现实中，主体性仍需要为关系与规范让路。</p >";
+  if(s<75) return "<p>你正处在觉察与行动之间的拉扯期，主体性正在形成。</p >";
+  if(s<90) return "<p>你在多个领域中建立了较为稳定的主体位置，但这往往需要额外心理能量维持。</p >";
+  return "<p>你具备高度自我觉察与结构理解，同时清楚自主并非没有代价。</p >";
+}
+
+function getDimensionFeedback(d,s){
+const texts=[
+[
+"<p>你可能较少停下来确认自己的真实状态，更容易忽略身体与情绪的信号。这通常并非因为你不敏感，而是你可能长期被训练去优先应对外部需求。</p >",
+"<p>你已经能够在一定程度上觉察自我，但这种觉察仍可能被现实情境打断。你知道自己在勉强，却未必总能停下来。</p >",
+"<p>你对自身状态有较高敏感度，能较早觉察不适，并认真对待这些信号。</p >"
+],
+[
+"<p>你在关系中较容易让渡位置，把稳定与和谐放在首位。这可能让你长期承担更多心理压力。</p >",
+"<p>你开始意识到关系中的不平衡，但仍会反复权衡是否值得表达。</p >",
+"<p>你能在关系中保有相对清晰的自我位置，理解亲密并不等于自我消失。</p >"
+],
+[
+"<p>你常处于内在冲突之中，为自己的需要感到犹豫或内疚。</p >",
+"<p>你已经意识到拉扯的存在，但尚未在所有领域找到稳定出口。</p >",
+"<p>你能较好整合自我需要与现实条件，内在冲突相对较少。</p >"
+],
+[
+"<p>你可能已经习惯了承担过多情绪劳动，疲惫感被长期正常化。</p >",
+"<p>你开始觉察这些代价，但仍在学习如何真正休息。</p >",
+"<p>你对自身情绪消耗有清晰意识，并能适度进行调节。</p >"
+],
+[
+"<p>你可能倾向于将压力与困境归因为个人不足。</p >",
+"<p>你已经开始理解环境与结构的影响。</p >",
+"<p>你能清楚区分个人责任与结构限制，不轻易自责。</p >"
+]
+];
+return s<45?texts[d][0]:s<70?texts[d][1]:texts[d][2];
+}
+</script>
+</body>
+</html>
